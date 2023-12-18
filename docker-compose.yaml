@@ -1,0 +1,7 @@
+version: '3.9'
+services:
+  reactjs-app:
+    container_name: reactjs-app
+    build: .
+    ports:
+      - 3000:3000
