@@ -31,9 +31,9 @@ export function IotList() {
           },
         });
         if (isMounted) {
-          const totalPages = response.data.response.totalPages;
-          setTotalitem(response.data.response.total);
-          setIotList(response.data.response.items);
+          const {total, items, totalPages} = response.data.response;
+          setTotalitem(total);
+          setIotList(items);
           setTotalPages(totalPages);
         }
       } catch (error) {
@@ -68,10 +68,17 @@ export function IotList() {
             limit: limit,
           },
         });
+        const {total, items, totalPages} = response.data.response;
+        setTotalitem(total);
+        setTotalPages(totalPages);
         if (response.data.response.items.length > 0) {
-          setIotList(response.data.response.items);
+          setIotList(items);
         } else {
-          handlePageChange(currentPage - 1);
+          if (currentPage === 1) {
+            setIotList([]);
+          } else {
+            handlePageChange(currentPage - 1);
+          }
         }
       } catch (error) {
         console.error(error);
@@ -114,61 +121,64 @@ export function IotList() {
               </tr>
             </thead>
             <tbody className="bg-white">
-              {iotList.map(iot => (
-                <tr key={iot.id}>
-                  <td className="whitespace-nowrap border-l-0 border-r-0 border-t-0 p-4 px-6 align-middle text-xs">
-                    {iot.device_name}
-                  </td>
-                  <td className="whitespace-nowrap border-l-0 border-r-0 border-t-0 p-4 px-6 align-middle text-xs">
-                    {iot.sensor_type}
-                  </td>
-                  <td className="whitespace-nowrap border-l-0 border-r-0 border-t-0 p-4 px-6 align-middle text-xs">
-                    {iot.status === true ? "active" : "inactive"}
-                  </td>
-                  <td className="whitespace-nowrap border-l-0 border-r-0 border-t-0 p-4 px-6 align-middle text-xs">
-                    <PrimaryButton
-                      type="button"
-                      id="createiot"
-                      text="View"
-                      className="mr-2"
-                      onClick={() => {
-                        navaigateToView(iot.id);
-                      }}
-                    />
-                    <DangerButton
-                      type="button"
-                      id="createiot"
-                      text="Delete"
-                      onClick={() => {
-                        deleteIot(iot.id);
-                      }}
-                    />
-                  </td>
-                </tr>
-              ))}
+              {iotList.length > 0 &&
+                iotList.map(iot => (
+                  <tr key={iot.id}>
+                    <td className="whitespace-nowrap border-l-0 border-r-0 border-t-0 p-4 px-6 align-middle text-xs">
+                      {iot.device_name}
+                    </td>
+                    <td className="whitespace-nowrap border-l-0 border-r-0 border-t-0 p-4 px-6 align-middle text-xs">
+                      {iot.sensor_type}
+                    </td>
+                    <td className="whitespace-nowrap border-l-0 border-r-0 border-t-0 p-4 px-6 align-middle text-xs">
+                      {iot.status === true ? "active" : "inactive"}
+                    </td>
+                    <td className="whitespace-nowrap border-l-0 border-r-0 border-t-0 p-4 px-6 align-middle text-xs">
+                      <PrimaryButton
+                        type="button"
+                        id="createiot"
+                        text="View"
+                        className="mr-2"
+                        onClick={() => {
+                          navaigateToView(iot.id);
+                        }}
+                      />
+                      <DangerButton
+                        type="button"
+                        id="createiot"
+                        text="Delete"
+                        onClick={() => {
+                          deleteIot(iot.id);
+                        }}
+                      />
+                    </td>
+                  </tr>
+                ))}
             </tbody>
           </table>
         )}
       </div>
-      <div className="mt-4 flex items-center justify-center">
-        <button
-          onClick={() => handlePageChange(currentPage - 1)}
-          disabled={currentPage === 1}
-          className={`rounded bg-blue-500 px-4 py-2 font-bold text-white ${
-            currentPage === 1 && "cursor-not-allowed opacity-50"
-          }`}>
-          Previous
-        </button>
-        <span className="mx-4">{`Page ${currentPage} of ${totalPages}`}</span>
-        <button
-          onClick={() => handlePageChange(currentPage + 1)}
-          disabled={currentPage === totalPages}
-          className={`rounded bg-blue-500 px-4 py-2 font-bold text-white ${
-            currentPage === totalPages && "cursor-not-allowed opacity-50"
-          }`}>
-          Next
-        </button>
-      </div>
+      {iotList.length > 0 && (
+        <div className="mt-4 flex items-center justify-center">
+          <button
+            onClick={() => handlePageChange(currentPage - 1)}
+            disabled={currentPage === 1}
+            className={`rounded bg-blue-500 px-4 py-2 font-bold text-white ${
+              currentPage === 1 && "cursor-not-allowed opacity-50"
+            }`}>
+            Previous
+          </button>
+          <span className="mx-4">{`Page ${currentPage} of ${totalPages}`}</span>
+          <button
+            onClick={() => handlePageChange(currentPage + 1)}
+            disabled={currentPage === totalPages}
+            className={`rounded bg-blue-500 px-4 py-2 font-bold text-white ${
+              currentPage === totalPages && "cursor-not-allowed opacity-50"
+            }`}>
+            Next
+          </button>
+        </div>
+      )}
     </>
   );
 }
