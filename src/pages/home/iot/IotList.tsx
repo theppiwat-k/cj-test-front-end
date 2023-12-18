@@ -11,16 +11,31 @@ const initState: IIot[] = [];
 export function IotList() {
   const {progress, setProgress} = useAuth();
   const navigate = useNavigate();
-  const [iotList, setIotList] = useState<IIot[]>(initState);
   const axiosPrivate = useAxiosPrivate();
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [limit, setLimit] = useState<number>(10);
+  const [totalItem, setTotalitem] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [iotList, setIotList] = useState<IIot[]>(initState);
 
   useEffect(() => {
     let isMounted = true;
     setProgress(progress + 20);
     const getIotList = async () => {
       try {
-        const response = await axiosPrivate.get(`api/iot/all`);
-        isMounted && setIotList(response.data);
+        const response = await axiosPrivate.get(`api/iot/all`, {
+          params: {
+            page: currentPage,
+            limit: limit,
+          },
+        });
+        if (isMounted) {
+          const totalPages = response.data.response.totalPages;
+          setTotalitem(response.data.response.total);
+          setIotList(response.data.response.items);
+          setTotalPages(totalPages);
+        }
       } catch (error) {
         if (isMounted) {
           console.error("error", error);
@@ -33,7 +48,7 @@ export function IotList() {
     return () => {
       isMounted = false;
     };
-  }, [axiosPrivate]);
+  }, [axiosPrivate, currentPage]);
 
   const navaigateToCreateIot = () => {
     navigate("iot-create");
@@ -47,12 +62,25 @@ export function IotList() {
     if (confirm()) {
       try {
         await axiosPrivate.delete(`api/iot/${id}`);
-        const response = await axiosPrivate.get(`api/iot/all`);
-        setIotList(response.data);
+        const response = await axiosPrivate.get(`api/iot/all`, {
+          params: {
+            page: currentPage,
+            limit: limit,
+          },
+        });
+        if (response.data.response.items.length > 0) {
+          setIotList(response.data.response.items);
+        } else {
+          handlePageChange(currentPage - 1);
+        }
       } catch (error) {
         console.error(error);
       }
     }
+  };
+
+  const handlePageChange = (newPage: number) => {
+    setCurrentPage(newPage);
   };
 
   return (
@@ -64,6 +92,9 @@ export function IotList() {
           text="Create IOT"
           onClick={navaigateToCreateIot}
         />
+        <span className="flex w-full justify-end font-semibold">
+          Total items: {totalItem}
+        </span>
         {iotList && (
           <table className="mt-4 w-full table-fixed">
             <thead className="sticky top-0 bg-white">
@@ -118,6 +149,25 @@ export function IotList() {
             </tbody>
           </table>
         )}
+      </div>
+      <div className="mt-4 flex items-center justify-center">
+        <button
+          onClick={() => handlePageChange(currentPage - 1)}
+          disabled={currentPage === 1}
+          className={`rounded bg-blue-500 px-4 py-2 font-bold text-white ${
+            currentPage === 1 && "cursor-not-allowed opacity-50"
+          }`}>
+          Previous
+        </button>
+        <span className="mx-4">{`Page ${currentPage} of ${totalPages}`}</span>
+        <button
+          onClick={() => handlePageChange(currentPage + 1)}
+          disabled={currentPage === totalPages}
+          className={`rounded bg-blue-500 px-4 py-2 font-bold text-white ${
+            currentPage === totalPages && "cursor-not-allowed opacity-50"
+          }`}>
+          Next
+        </button>
       </div>
     </>
   );

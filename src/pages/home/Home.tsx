@@ -15,7 +15,7 @@ export function Home() {
         <section role="main" className="z-0 w-full">
           <main className="main min-h-screen w-full bg-gray-50 transition-all md:ml-64 md:w-[calc(100%-256px)]">
             <TopBarComponent />
-            <div className="px-6 py-8">
+            <div className="h-full px-6 py-8">
               <Outlet />
             </div>
           </main>

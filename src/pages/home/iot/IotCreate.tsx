@@ -1,4 +1,4 @@
-import React from "react";
+import React, {useState} from "react";
 import {Input} from "../../../components/forms/Input";
 import {FormProvider, useForm} from "react-hook-form";
 import {ICreateIot} from "../../../models/iot";
@@ -6,8 +6,10 @@ import {Radio} from "../../../components/forms/Radio";
 import {PrimaryButton} from "../../../components/buttons/PrimaryButton";
 import {useNavigate} from "react-router-dom";
 import useAxiosPrivate from "../../../hooks/useAxiosPrivate";
+import ApiErrorHelper from "../../../utils/apiErrorHelper";
 
 export function IotCreate() {
+  const [error, setError] = useState<string>("");
   const navigate = useNavigate();
   const axiosPrivate = useAxiosPrivate();
   const methods = useForm<ICreateIot>({});
@@ -17,7 +19,6 @@ export function IotCreate() {
   };
 
   const onSubmit = methods.handleSubmit(async data => {
-    console.log(data);
     try {
       const body: ICreateIot = {
         device_name: data.device_name,
@@ -27,7 +28,10 @@ export function IotCreate() {
       await axiosPrivate.post("api/iot", body);
       navaigateToCreateIot();
     } catch (error) {
-      console.error(error);
+      console.error("Axios Error:", error);
+      const errorHelper = new ApiErrorHelper(error);
+      const errorMessage = errorHelper.getErrorMessage();
+      setError(errorMessage);
     }
   });
 
@@ -90,6 +94,9 @@ export function IotCreate() {
                   options={statusRadio}
                 />
               </div>
+            </div>
+            <div className="mb-6">
+              <span className="text-xs text-red-500">{error}</span>
             </div>
             <PrimaryButton
               type="submit"

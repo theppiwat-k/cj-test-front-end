@@ -1,10 +1,11 @@
-import React from "react";
+import React, {useState} from "react";
 import {Link, useNavigate} from "react-router-dom";
 import {Input} from "../../components/forms/Input";
 import {FormProvider, useForm} from "react-hook-form";
 import {PrimaryButton} from "../../components/buttons/PrimaryButton";
 import {signin as signinService} from "../../services/user";
 import {useAuth} from "../../provider/AuthContext";
+import ApiErrorHelper from "../../utils/apiErrorHelper";
 
 interface ISignin {
   username: string;
@@ -12,6 +13,7 @@ interface ISignin {
 }
 
 export function Signin() {
+  const [error, setError] = useState<string>("");
   const navigate = useNavigate();
   const {setAuthenticated} = useAuth();
   const methods = useForm<ISignin>();
@@ -27,7 +29,10 @@ export function Signin() {
       localStorage.setItem("user", JSON.stringify(signin.data));
       navigate("/", {replace: true});
     } catch (error) {
-      console.error(error);
+      console.error("Axios Error:", error);
+      const errorHelper = new ApiErrorHelper(error);
+      const errorMessage = errorHelper.getErrorMessage();
+      setError(errorMessage);
     }
   });
 
@@ -52,7 +57,7 @@ export function Signin() {
                   }}
                 />
               </div>
-              <div className="mb-6">
+              <div className="mb-2">
                 <Input
                   type="password"
                   id="password"
@@ -66,6 +71,9 @@ export function Signin() {
                     },
                   }}
                 />
+              </div>
+              <div className="mb-6">
+                <span className="text-xs text-red-500">{error}</span>
               </div>
               <div className="flex items-center justify-between">
                 <div className="flex gap-x-2">

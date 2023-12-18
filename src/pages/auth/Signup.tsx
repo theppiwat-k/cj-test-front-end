@@ -1,5 +1,4 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-import React from "react";
+import React, {useState} from "react";
 import {FormProvider, useForm} from "react-hook-form";
 import {Input} from "../../components/forms/Input";
 import {Link, useNavigate} from "react-router-dom";
@@ -11,6 +10,8 @@ import {
 } from "../../utils/validations";
 import {register as registerService} from "../../services/user";
 import {IUser} from "../../models/user";
+import ApiErrorHelper from "../../utils/apiErrorHelper";
+import {CancelButton} from "../../components/buttons/CancelButton";
 interface IRegisrer {
   username: string;
   password: string;
@@ -19,6 +20,7 @@ interface IRegisrer {
 }
 
 export function Signup() {
+  const [error, setError] = useState<string>("");
   const navigate = useNavigate();
   const methods = useForm<IRegisrer>();
   const onSubmit = methods.handleSubmit(async ({email, password, username}) => {
@@ -33,7 +35,10 @@ export function Signup() {
       navigate("/login", {replace: true});
       methods.reset();
     } catch (error) {
-      console.error(error);
+      console.error("Axios Error:", error);
+      const errorHelper = new ApiErrorHelper(error);
+      const errorMessage = errorHelper.getErrorMessage();
+      setError(errorMessage);
     }
   });
 
@@ -94,10 +99,13 @@ export function Signup() {
                 id="email"
                 label="Email"
                 placeholder="Enter username"
-                className="mb-6"
+                className="mb-2"
                 autocomplete="email"
                 validation={validateEmail()}
               />
+              <div className="mb-6">
+                <span className="text-xs text-red-500">{error}</span>
+              </div>
               <PrimaryButton
                 type="submit"
                 id="submit"
@@ -106,7 +114,12 @@ export function Signup() {
                 className="mx-2"
               />
               <Link to="/login">
-                <button className="max-w-sm border-2 p-2">Cancel</button>
+                <CancelButton
+                  type="button"
+                  id="button"
+                  text="Cancel"
+                  className="max-w-sm"
+                />
               </Link>
             </form>
           </FormProvider>
